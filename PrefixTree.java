@@ -1,7 +1,8 @@
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Arrays;
 
-public class Assignment implements PrefixMap {
+public class PrefixTree implements PrefixMap {
 	
 	protected class Node {
 		/**********************************************
@@ -20,7 +21,7 @@ public class Assignment implements PrefixMap {
 		 **********************************************/
 		String value = null;
 		final Node parent; // for efficient removal
-		final Node[] children = new Node[NUCLEOBASES.length]; // you never know
+		final Node[] children = new Node[VALID_CHARS.length]; // you never know
 		
 		Node(Node parent) { this.parent = parent; }
 		
@@ -32,15 +33,15 @@ public class Assignment implements PrefixMap {
 			int index = index(key);
 			if (children[index] == null) {
 				children[index] =  new Node(this);
-				Assignment.this.updateNodeCount(1); // because encapsulation
+				PrefixTree.this.updateNodeCount(1); // because encapsulation
 			}
 			return children[index];
 		}
 		
 		int index(char key) {
 			
-			for (int i = 0; i < NUCLEOBASES.length; i++)
-				if (key == NUCLEOBASES[i])
+			for (int i = 0; i < VALID_CHARS.length; i++)
+				if (key == VALID_CHARS[i])
 					return i;
 			
 			throw new MalformedKeyException();
@@ -77,7 +78,7 @@ public class Assignment implements PrefixMap {
 			if (!child.isDead()) return;
 			
 			children[index(child)] = null;
-			Assignment.this.updateNodeCount(-1);
+			PrefixTree.this.updateNodeCount(-1);
 			
 			if (parent != null)
 				parent.removeIfDead(this);
@@ -128,20 +129,41 @@ public class Assignment implements PrefixMap {
 	 * |__________________________|________________|
 	 * 
 	 *************************************************************************/
-	private static final char[] NUCLEOBASES = new char[] {'A', 'C', 'G', 'T'};
+	private final char[] VALID_CHARS;
+	private final String VALID_REGEX;
 	private final Node root = new Node(null);
 	private int size = 0, // obviously there are no more than 2^31 - 1 DNA sequences in existence
 				keySum = 0, // and the length sum of those sequences are also below 2^31 - 1
 				numNodes = 1; // the number of unique prefixes is also below 2^31 - 1
 	
-	public Assignment() {} //:P bad code right here
-	/***********************************************************************************
-	 *  helper methods are static so you know without looking inside 
-	 *  that they won't modify instance variables
-	 ***********************************************************************************/
-	private static void verify(String key) {
+	public PrefixTree(String validChars) {
+		for (int i = 0; i < validChars.length(); i++) {
+			char ch = validChars.charAt(i);
+			switch (ch) {
+				case '\\':
+				case ']':
+				case '[':
+				case '^':
+					throw new IllegalArgumentException("no " + ch + " pls");
+			}
+			if (i != validChars.lastIndexOf(ch))
+				throw new IllegalArgumentException("repeated characters");
+		}
+		
+		VALID_CHARS = validChars.toCharArray();
+		Arrays.sort(VALID_CHARS);
+		VALID_REGEX = '[' + new String(VALID_CHARS) + "]*+";
+	}
+	
+	public PrefixTree() { this("ACGT"); }//:P bad code right here
+
+	/***********************************************************
+	 * Helper methods have static so it's easy to identify 
+	 * that they don't change instance variables
+	 ***********************************************************/
+	private void verify(String key, String regex) {
 		if (key == null) throw new IllegalArgumentException("null key");
-		if (!key.matches("[ACTG]*+")) throw new MalformedKeyException(); // possessive, since it fails faster
+		if (!key.matches(regex)) throw new MalformedKeyException(); // possessive, since it fails faster
 	}
 	@Override
 	public boolean isEmpty() { return size == 0; }
@@ -165,7 +187,7 @@ public class Assignment implements PrefixMap {
 	@Override
 	public String put(String key, String value) {
 		
-		verify(key);
+		verify(key, VALID_REGEX);
 		if (value == null) throw new IllegalArgumentException();
 		
 		Node pos = root;
@@ -190,9 +212,9 @@ public class Assignment implements PrefixMap {
 		return pos.removeValue();
 	}
 	
-	private static Node traverse(Node from, String path) {
+	private Node traverse(Node from, String path) {
 		
-		verify(path);
+		verify(path, VALID_REGEX);
 		Node cur = from;
 		
 		for (int i = 0; i < path.length() && cur != null; i++)
@@ -202,16 +224,16 @@ public class Assignment implements PrefixMap {
 	}
 	
 	@Override
-	public int countKeysMatchingPrefix(String prefix) { return countValues(traverse(root, prefix)); }
+	public int countKeysMatchingPrefix(String prefix) { return countValues(traverse(root, prefix), VALID_CHARS); }
 	
-	private static int countValues(Node subtrie) {
+	private static int countValues(Node subtrie, char[] validChars) {
 		
 		if (subtrie == null)
 			return 0;
 		
 		int count = (subtrie.getValue() != null) ? 1 : 0;
-		for (char base : NUCLEOBASES)
-			count += countValues(subtrie.getChild(base));
+		for (char base : validChars)
+			count += countValues(subtrie.getChild(base), validChars);
 		
 		return count;
 	}
@@ -219,22 +241,22 @@ public class Assignment implements PrefixMap {
 	public List<String> getKeysMatchingPrefix(String prefix) {
 		
 		List<String> keys = new ArrayList<>();
-		preOrderKeys(traverse(root, prefix), new StringBuilder(prefix), keys);		
+		preOrderKeys(traverse(root, prefix), new StringBuilder(prefix), keys, VALID_CHARS);		
 		return keys;
 	}
 	/**************************************************************************************
 	 * Populates the list with keys in the subtrie given in the parameter
 	 **************************************************************************************/
-	private static void preOrderKeys(Node subtrie, StringBuilder curKey, List<String> keys) {
+	private static void preOrderKeys(Node subtrie, StringBuilder curKey, List<String> keys, char[] validChars) {
 		
 		if (subtrie == null)
 			return;
 		if (subtrie.getValue() != null)
 			keys.add(curKey.toString());
 		
-		for (char base : NUCLEOBASES) {
+		for (char base : validChars) {
 			curKey.append(base);
-			preOrderKeys(subtrie.getChild(base), curKey, keys);
+			preOrderKeys(subtrie.getChild(base), curKey, keys, validChars);
 			curKey.deleteCharAt(curKey.length() - 1);
 		}
 	}
