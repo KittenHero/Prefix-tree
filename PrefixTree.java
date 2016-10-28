@@ -21,9 +21,10 @@ public class PrefixTree implements PrefixMap {
 		 **********************************************/
 		String value = null;
 		final Node parent; // for efficient removal
+		final char key; // for removal as well
 		final Node[] children = new Node[VALID_CHARS.length]; // you never know
 		
-		Node(Node parent) { this.parent = parent; }
+		Node(Node parent, char key) { this.parent = parent; this.key = key;}
 		
 		String getValue() { return value; }
 		Node getChild(char key) { return children[index(key)]; }
@@ -32,7 +33,7 @@ public class PrefixTree implements PrefixMap {
 			
 			int index = index(key);
 			if (children[index] == null) {
-				children[index] =  new Node(this);
+				children[index] =  new Node(this, key);
 				PrefixTree.this.updateNodeCount(1); // because encapsulation
 			}
 			return children[index];
@@ -40,11 +41,9 @@ public class PrefixTree implements PrefixMap {
 		
 		int index(char key) {
 			
-			for (int i = 0; i < VALID_CHARS.length; i++)
-				if (key == VALID_CHARS[i])
-					return i;
-			
-			throw new MalformedKeyException();
+			int i = Arrays.binarySearch(VALID_CHARS, key);
+			if (i < 0) throw new MalformedKeyException();
+			return i;
 		}
 		
 		String setValue(String v) {
@@ -99,12 +98,9 @@ public class PrefixTree implements PrefixMap {
 		 ********************************************************/
 		int index(Node child) {
 			if (child == null) throw new IllegalArgumentException("undefined behaviour");
-			
-			for (int i = 0; i < children.length; i++)
-				if (children[i] == child)
-					return i;
-			
-			throw new IllegalArgumentException("Invalid child");
+			int i = index(child.key);
+			if (this.children[i] != child) throw new IllegalArgumentException("Invalid child");
+			return i;
 		}
 	}
 	/***************************************************************************
@@ -131,7 +127,7 @@ public class PrefixTree implements PrefixMap {
 	 *************************************************************************/
 	private final char[] VALID_CHARS;
 	private final String VALID_REGEX;
-	private final Node root = new Node(null);
+	private final Node root = new Node(null, '\0');
 	private int size = 0, // obviously there are no more than 2^31 - 1 DNA sequences in existence
 				keySum = 0, // and the length sum of those sequences are also below 2^31 - 1
 				numNodes = 1; // the number of unique prefixes is also below 2^31 - 1
