@@ -2,13 +2,30 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 
-public class Lab11 implements PrefixMap {
+public class HMbasedPrefixMap implements PrefixMap {
 	
 	private final HashMap<String, String> keys = new HashMap<>();;
 	private final HashMap<String, ArrayList<String>> prefixes  = new HashMap<>();
+	private final String validCharsRegex;
 	private int keySum = 0;
 
-	public Lab11() {}
+	public HMbasedPrefixMap(String validChars) { 
+		for (int i = 0; i < validChars.length(); i++) {
+			char ch = validChars.charAt(i);
+			switch (ch) {
+				case '\\':
+				case ']':
+				case '[':
+				case '^':
+					throw new IllegalArgumentException("no " + ch + " pls");
+			}
+			if (i != validChars.lastIndexOf(ch))
+				throw new IllegalArgumentException("repeated characters");
+		}
+		validCharsRegex = '[' + validChars + "]*+"; 
+	}
+	
+	public HMbasedPrefixMap() { this("ACTG"); }
 
 	@Override
 	public int size() {	return keys.size(); }
@@ -18,7 +35,7 @@ public class Lab11 implements PrefixMap {
 
 	private void verify(String key) {
 		if (key == null) throw new IllegalArgumentException("null key");
-		if (!key.matches("[ACTG]*+")) throw new MalformedKeyException();
+		if (!key.matches(validCharsRegex)) throw new MalformedKeyException();
 	}
 	
 	@Override

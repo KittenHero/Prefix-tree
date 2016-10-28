@@ -10,7 +10,7 @@ public class BasicTest {
 	
 	@Test
 	public void testPut() {
-		Assignment t = new Assignment();
+		PrefixMap t = new PrefixTree("ACTG");
 		
 		assertNull(t.put("ACTG", "foo"));
 		assertEquals("foo", t.put("ACTG", "bar"));
@@ -20,7 +20,7 @@ public class BasicTest {
 	
 	@Test
 	public void testSizeAndKeySum() {
-		Assignment t = new Assignment();
+		PrefixMap t = new PrefixTree("ACTG");
 		assertEquals(0, t.sumKeyLengths());
 		assertEquals(0, t.size());
 		
@@ -52,7 +52,7 @@ public class BasicTest {
 	
 	@Test
 	public void testRemove() {
-		Assignment t = new Assignment();
+		PrefixMap t = new PrefixTree("ACTG");
 		assertNull(t.put("ACTG", "foo"));
 		assertNull(t.put("ATCC", "bar"));
 		assertNull(t.put("ACACACACACACTGGT", "baz"));
@@ -71,7 +71,7 @@ public class BasicTest {
 	
 	@Test
 	public void testRemovePrefix() {
-		Assignment t = new Assignment();
+		PrefixMap t = new PrefixTree("ACTG");
 		
 		assertNull(t.put("ACCACCACCACC", "foo"));
 		assertNull(t.put("ACC", "bar"));
@@ -85,7 +85,7 @@ public class BasicTest {
 	
 	@Test
 	public void testCountKeysMatchingPrefix() {
-		Assignment t = new Assignment();
+		PrefixMap t = new PrefixTree("ACTG");
 		assertEquals(0, t.countKeysMatchingPrefix("ACA"));
 		
 		assertNull(t.put("ACTG", "foo"));
@@ -104,7 +104,7 @@ public class BasicTest {
 
 	@Test
 	public void testGetKeysMatchingPrefix() {
-		Assignment t = new Assignment();
+		PrefixMap t = new PrefixTree("ACTG");
 		assertEquals(Arrays.asList(), t.getKeysMatchingPrefix("ACA"));
 		
 		assertNull(t.put("ACTG", "foo"));
@@ -123,7 +123,7 @@ public class BasicTest {
 
 	@Test
 	public void testCountPrefixes() {
-		Assignment t = new Assignment();
+		PrefixMap t = new PrefixTree("ACTG");
 		assertEquals(0, t.countPrefixes());
 		
 		//----------------1234
@@ -147,7 +147,7 @@ public class BasicTest {
 	
 	@Test
 	public void testSelfPrefix() {
-		Assignment t = new Assignment();
+		PrefixMap t = new PrefixTree("ACTG");
 		assertNull(t.put("ACTCA", "a palindrome emor dni lap a"));
 		assertNull(t.put("ACTCACTCA", "reversible el bis r ever"));
 		
@@ -159,7 +159,7 @@ public class BasicTest {
 	@Test
 	public void testEmptyString() {
 		
-		Assignment t = new Assignment();
+		PrefixMap t = new PrefixTree("ACTG");
 		
 		assertNull(t.put("", "..."));
 		assertNull(t.put("GATTACA", "who cares"));
@@ -174,8 +174,8 @@ public class BasicTest {
 	
 	@Test
 	public void testScope() {
-		Assignment frankenstiens = new Assignment();
-		Assignment einstien = new Assignment();
+		PrefixMap frankenstiens = new PrefixTree("ACTG");
+		PrefixMap einstien = new PrefixTree("ACTG");
 		
 		assertNull(frankenstiens.put("A"+"CAT"+"ATTACCA", "is a monster"));
 		assertEquals(1, frankenstiens.size());
@@ -184,7 +184,7 @@ public class BasicTest {
 	
 	@Test
 	public void testListNotModified() {
-		Assignment t = new Assignment();
+		PrefixMap t = new PrefixTree("ACTG");
 		
 		assertNull(t.put("ACTGATC", "goo"));
 		
@@ -198,7 +198,7 @@ public class BasicTest {
 	
 	@Test
 	public void testSizeEquivalence() {
-		Assignment t = new Assignment();
+		PrefixMap t = new PrefixTree("ACTG");
 		
 		assertNull(t.put("", "fat cats sat in hats on mats"));
 		assertNull(t.put("ATACAT", "a hat!"));
@@ -209,7 +209,7 @@ public class BasicTest {
 	
 	@Test
 	public void testListOrdered() {
-		Assignment t = new Assignment();
+		PrefixMap t = new PrefixTree("ACTG");
 		
 		List<String> keys = Arrays.asList("", "TACC", "GCC", "CAT", "AGG", "C");
 		for (String key : keys)
@@ -229,7 +229,7 @@ public class BasicTest {
 		
 	@Test
 	public void testInvalidInput() {
-		Assignment t = new Assignment();
+		PrefixMap t = new PrefixTree("ACTG");
 		String e = "expected ",
 				m = "MalformedKeyException",
 				i = "IllegalArgumentException";
