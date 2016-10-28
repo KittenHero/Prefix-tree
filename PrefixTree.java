@@ -178,7 +178,7 @@ public class PrefixTree implements PrefixMap {
 	@Override
 	public String get(String key) {
 		
-		Node pos = traverse(root, key);
+		Node pos = traverse(root, key, VALID_REGEX);
 		if (pos == null)
 			return null;
 		else
@@ -203,7 +203,7 @@ public class PrefixTree implements PrefixMap {
 	@Override
 	public String remove(String key) {
 		
-		Node pos = traverse(root, key);
+		Node pos = traverse(root, key, VALID_REGEX);
 		if (pos == null || pos.getValue() == null)
 			return null;
 		
@@ -212,9 +212,9 @@ public class PrefixTree implements PrefixMap {
 		return pos.removeValue();
 	}
 	
-	private Node traverse(Node from, String path) {
+	private Node static traverse(Node from, String path, String validCharsRegex) {
 		
-		verify(path, VALID_REGEX);
+		verify(path, validCharsRegex);
 		Node cur = from;
 		
 		for (int i = 0; i < path.length() && cur != null; i++)
@@ -224,7 +224,8 @@ public class PrefixTree implements PrefixMap {
 	}
 	
 	@Override
-	public int countKeysMatchingPrefix(String prefix) { return countValues(traverse(root, prefix), VALID_CHARS); }
+	public int countKeysMatchingPrefix(String prefix) 
+	{ return countValues(traverse(root, prefix, VALID_REGEX), VALID_CHARS); }
 	
 	private static int countValues(Node subtrie, char[] validChars) {
 		
@@ -241,7 +242,8 @@ public class PrefixTree implements PrefixMap {
 	public List<String> getKeysMatchingPrefix(String prefix) {
 		
 		List<String> keys = new ArrayList<>();
-		preOrderKeys(traverse(root, prefix), new StringBuilder(prefix), keys, VALID_CHARS);		
+		preOrderKeys(traverse(root, prefix, VALID_REGEX), 
+			     new StringBuilder(prefix), keys, VALID_CHARS);		
 		return keys;
 	}
 	/**************************************************************************************
